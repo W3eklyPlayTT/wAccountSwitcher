@@ -39,54 +39,54 @@ public final class AccountSwitcherScreen extends Screen {
     private boolean showToken;
     private int pageStart;
     private int panelLeft, panelTop, panelWidth, panelHeight;
+    private int microsoftButtonY, codeBannerY, codeActionsY, advancedY;
 
     public AccountSwitcherScreen(Screen parent) { super(Text.literal("Account Switcher")); this.parent = parent; }
 
     @Override protected void init() {
         int cx = width / 2;
         panelWidth = Math.min(520, width - 24);
-        panelHeight = Math.min(450, height - 20);
+        int shownAccounts = Math.min(3, AccountStore.all().size());
+        panelHeight = Math.min(450, Math.min(height - 20, 285 + shownAccounts * 50));
         panelLeft = cx - panelWidth / 2;
         panelTop = (height - panelHeight) / 2;
         int innerLeft = panelLeft + 24;
         int innerWidth = panelWidth - 48;
         int y = panelTop + 91;
         drawAccounts(innerLeft, innerWidth, y);
+        int offlineY = panelTop + 102 + shownAccounts * 50;
+        microsoftButtonY = offlineY + 31;
+        codeBannerY = microsoftButtonY + 33;
+        codeActionsY = microsoftButtonY + 66;
+        advancedY = codeActionsY + 32;
 
-        offlineName = new TextFieldWidget(textRenderer, innerLeft, panelTop + panelHeight - 147,
+        offlineName = new TextFieldWidget(textRenderer, innerLeft, offlineY,
                 innerWidth - 106, 24, Text.literal("Minecraft username"));
         offlineName.setMaxLength(16);
         offlineName.setPlaceholder(Text.literal("Enter username"));
         addDrawableChild(offlineName);
-        addDrawableChild(new RoundedButton(innerLeft + innerWidth - 98, panelTop + panelHeight - 147, 98, 24,
-                "Add offline", b -> addOffline(), 0xFF3478F6));
+        addDrawableChild(button("Add offline", b -> addOffline(), innerLeft + innerWidth - 98, offlineY, 98, 24));
 
-        addDrawableChild(new RoundedButton(innerLeft, panelTop + panelHeight - 116, innerWidth, 28,
-                busy ? "Connecting…" : "Continue with Microsoft", b -> microsoftLogin(), 0xFF3478F6));
+        addDrawableChild(button(busy ? "Connecting…" : "Continue with Microsoft", b -> microsoftLogin(), innerLeft, microsoftButtonY, innerWidth, 28));
 
-        copyCodeButton = new RoundedButton(innerLeft, panelTop + panelHeight - 83, (innerWidth - 8) / 2, 24,
-                "Copy sign-in code", b -> copyCode(), 0xFF414B5A);
-        openLinkButton = new RoundedButton(innerLeft + (innerWidth + 8) / 2, panelTop + panelHeight - 83,
-                (innerWidth - 8) / 2, 24, "Open Microsoft page", b -> openMicrosoftPage(), 0xFF414B5A);
+        copyCodeButton = button("Copy sign-in code", b -> copyCode(), innerLeft, codeActionsY, (innerWidth - 8) / 2, 24);
+        openLinkButton = button("Open Microsoft page", b -> openMicrosoftPage(), innerLeft + (innerWidth + 8) / 2, codeActionsY, (innerWidth - 8) / 2, 24);
         copyCodeButton.visible = !deviceCodeText.isEmpty();
         openLinkButton.visible = !verificationUri.isEmpty();
         addDrawableChild(copyCodeButton);
         addDrawableChild(openLinkButton);
 
         if (showToken) {
-            tokenField = new TextFieldWidget(textRenderer, innerLeft, panelTop + panelHeight - 52,
+            tokenField = new TextFieldWidget(textRenderer, innerLeft, advancedY,
                     innerWidth - 112, 24, Text.literal("Session token"));
             tokenField.setMaxLength(4096);
             tokenField.setPlaceholder(Text.literal("Advanced: paste a session token"));
             addDrawableChild(tokenField);
-            addDrawableChild(new RoundedButton(innerLeft + innerWidth - 104, panelTop + panelHeight - 52, 104, 24,
-                    "Check token", b -> addToken(), 0xFF414B5A));
+            addDrawableChild(button("Check token", b -> addToken(), innerLeft + innerWidth - 104, advancedY, 104, 24));
         } else {
-            addDrawableChild(new RoundedButton(innerLeft, panelTop + panelHeight - 52, innerWidth - 112, 24,
-                    "Advanced: session token", b -> { showToken = true; clearAndInit(); }, 0xFF303744));
+            addDrawableChild(button("Advanced: session token", b -> { showToken = true; clearAndInit(); }, innerLeft, advancedY, innerWidth - 112, 24));
         }
-        addDrawableChild(new RoundedButton(cx - 54, panelTop + panelHeight - 22, 108, 24,
-                "Done", b -> close(), 0xFF414B5A));
+        addDrawableChild(button("Done", b -> close(), cx - 54, panelTop + panelHeight - 29, 108, 24));
     }
 
     private ButtonWidget button(String label, ButtonWidget.PressAction action, int x, int y, int w, int h) {
@@ -241,9 +241,9 @@ public final class AccountSwitcherScreen extends Screen {
             context.drawCenteredTextWithShadow(textRenderer, Text.literal("No accounts yet — add one below"), width / 2, panelTop + 106, 0xFFAAB6C5);
         }
         if (!deviceCodeText.isEmpty()) {
-            rounded(context, panelLeft + 24, panelTop + panelHeight - 182, panelWidth - 48, 31, 9, 0xFF343021);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("Your code:  " + deviceCodeText), width / 2, panelTop + panelHeight - 172, 0xFFFFDF68);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("Keep this screen open while you approve sign-in."), width / 2, panelTop + panelHeight - 159, 0xFFCFD5DE);
+            rounded(context, panelLeft + 24, codeBannerY, panelWidth - 48, 31, 9, 0xFF343021);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("Your code:  " + deviceCodeText), width / 2, codeBannerY + 6, 0xFFFFDF68);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("Enter this code on Microsoft's page."), width / 2, codeBannerY + 19, 0xFFCFD5DE);
         }
         super.render(context, mouseX, mouseY, delta);
         for (int i = 0; i < 3 && pageStart + i < AccountStore.all().size(); i++) {
@@ -272,13 +272,6 @@ public final class AccountSwitcherScreen extends Screen {
         SkinHeadButton(int x, int y, int w, int h, Account account, boolean active, PressAction action) {
             super(x, y, w, h, net.minecraft.text.Text.literal(""), action, DEFAULT_NARRATION_SUPPLIER);
             loadSkin(account);
-        }
-        @Override protected void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {}
-    }
-
-    private final class RoundedButton extends ButtonWidget {
-        RoundedButton(int x, int y, int w, int h, String label, PressAction action, int background) {
-            super(x, y, w, h, net.minecraft.text.Text.literal(label), action, DEFAULT_NARRATION_SUPPLIER);
         }
         @Override protected void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {}
     }
