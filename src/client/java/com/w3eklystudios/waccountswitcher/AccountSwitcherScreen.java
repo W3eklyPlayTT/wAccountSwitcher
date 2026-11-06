@@ -155,7 +155,7 @@ public final class AccountSwitcherScreen extends Screen {
 
     private void runOnClient() { }
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        context.fill(0, 0, width, height, 0xD0101010);
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20, 0xFFFFFF);
         context.drawCenteredTextWithShadow(textRenderer, Text.literal(status), width / 2, 37, 0xDDDDDD);
         if (AccountStore.all().isEmpty()) context.drawCenteredTextWithShadow(textRenderer, Text.literal("No saved accounts yet"), width / 2, 64, 0xAAAAAA);
