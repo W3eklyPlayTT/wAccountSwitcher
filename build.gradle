@@ -1,0 +1,27 @@
+plugins { id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" }
+version = project.mod_version
+group = project.maven_group
+base { archivesName = 'wAccountSwitcher' }
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.minecraft_version}+build.1:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+loom {
+    splitEnvironmentSourceSets()
+    mods { "waccountswitcher" { sourceSet sourceSets.main; sourceSet sourceSets.client } }
+}
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
+}
+java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
+tasks.withType(JavaCompile).configureEach { options.release = 21; options.encoding = 'UTF-8' }
+tasks.register('distribution', Zip) {
+    dependsOn tasks.named('remapJar')
+    from(tasks.named('remapJar')) { into 'mods' }
+    from('README.md')
+    archiveFileName = 'wAccountSwitcher-1.21.11.zip'
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+}
+tasks.named('build') { dependsOn tasks.named('distribution') }

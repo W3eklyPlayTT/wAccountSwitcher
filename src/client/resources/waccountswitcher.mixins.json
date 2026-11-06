@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.w3eklystudios.waccountswitcher.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["TitleScreenMixin", "MinecraftClientAccessor"],
+  "injectors": { "defaultRequire": 1 }
+}

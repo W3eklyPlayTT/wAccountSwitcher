@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "waccountswitcher",
+  "version": "${version}",
+  "name": "wAccountSwitcher",
+  "description": "A simple Minecraft account switcher with Microsoft, offline, and session token accounts.",
+  "authors": ["W3ekly Studios"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["com.w3eklystudios.waccountswitcher.WAccountSwitcher"] },
+  "mixins": [{ "config": "waccountswitcher.mixins.json", "environment": "client" }],
+  "depends": { "fabricloader": ">=0.16.0", "minecraft": "~1.21.11", "java": ">=21" }
+}
